@@ -69,7 +69,7 @@ for:
 
     - cmake --build static --config Release
   after_build:
-    - 7z a mozjpeg-%GIT_VERSION%-win-%ARCH%.zip shared/Release static/Release
+    - 7z a mozjpeg-%GIT_VERSION%-win-%ARCH%.zip static/Release
   cache:
     - C:\ProgramData\chocolatey\bin
     - C:\ProgramData\chocolatey\lib
