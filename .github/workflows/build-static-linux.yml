@@ -1,0 +1,41 @@
+name: Build static on linux
+
+on:
+  release:
+    types: [published, prereleased]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: System info
+        uses: kenchan0130/actions-system-info@master
+      - name: update
+        run: sudo apt update
+      - name: install deps
+        run: sudo apt install autoconf libtool nasm libpng-dev automake pkg-config build-essential -yq
+      - name: list versions
+        run: |
+          nasm -v
+          cmake --version
+          git describe --always --tags --dirty
+          echo "GIT_VERSION=$(git describe --always --tags --dirty)" >> $GITHUB_ENV
+      - name: Build static
+        run: |
+          cmake -B static -DENABLE_SHARED=0 -DENABLE_STATIC=1 -DREQUIRE_SIMD=1
+          cmake --build static --config Release
+      - name: Zip release
+        run: |
+          mkdir Release
+          mv static/*-static ./Release
+          7z a mozjpeg-$GIT_VERSION-linux-${{ steps.system-info.outputs.release }}-x64.zip Release
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: mozjpeg-$GIT_VERSION-linux-${{ steps.system-info.outputs.release }}-x64.zip
+          path: |
+            Release/
